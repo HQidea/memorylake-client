@@ -5,7 +5,6 @@ import warnings
 from typing import Any, NoReturn, Optional
 
 import httpx
-import requests
 
 from memorylake.mem0.client.project import AsyncProject, Project
 from memorylake.mem0.client.utils import api_error_handler, safe_cast
@@ -1023,7 +1022,7 @@ class AsyncMemoryClient:
         """Validate the API key by making a test request."""
         try:
             params = self._prepare_params()
-            response = requests.get(
+            response = httpx.get(
                 f"{self.host}/v1/ping/",
                 headers={
                     "Authorization": f"Token {self.api_key}",
@@ -1041,7 +1040,7 @@ class AsyncMemoryClient:
 
             return data.get("user_email")
 
-        except requests.exceptions.HTTPError as e:
+        except httpx.HTTPStatusError as e:
             try:
                 error_data = e.response.json()
                 error_message = error_data.get("detail", str(e))
