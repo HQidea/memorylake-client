@@ -1,4 +1,3 @@
-import hashlib
 import logging
 import os
 import warnings
@@ -10,15 +9,11 @@ from memorylake.mem0.client.project import AsyncProject, Project
 from memorylake.mem0.client.utils import api_error_handler, safe_cast
 
 # Exception classes are referenced in docstrings only
-from memorylake.mem0.memory.setup import get_user_id, setup_config
 from memorylake.mem0.memory.telemetry import capture_client_event
 
 logger = logging.getLogger(__name__)
 
 warnings.filterwarnings("default", category=DeprecationWarning)
-
-# Setup user config
-setup_config()
 
 
 class MemoryClient:
@@ -40,7 +35,6 @@ class MemoryClient:
     host: str
     org_id: Optional[str]
     project_id: Optional[str]
-    user_id: str
     client: httpx.Client
     user_email: Optional[str]
     project: Project
@@ -74,13 +68,9 @@ class MemoryClient:
         self.host = host or "https://api.mem0.ai"
         self.org_id = org_id
         self.project_id = project_id
-        self.user_id = get_user_id()
 
         if not self.api_key:
             raise ValueError("Mem0 API Key not provided. Please provide an API Key.")
-
-        # Create MD5 hash of API key for user_id
-        self.user_id = hashlib.md5(self.api_key.encode()).hexdigest()
 
         if client is not None:
             self.client = client
@@ -89,7 +79,6 @@ class MemoryClient:
             self.client.headers.update(
                 {
                     "Authorization": f"Token {self.api_key}",
-                    "Mem0-User-ID": self.user_id,
                 }
             )
         else:
@@ -97,7 +86,6 @@ class MemoryClient:
                 base_url=self.host,
                 headers={
                     "Authorization": f"Token {self.api_key}",
-                    "Mem0-User-ID": self.user_id,
                 },
                 timeout=300,
             )
@@ -944,7 +932,6 @@ class AsyncMemoryClient:
     host: str
     org_id: Optional[str]
     project_id: Optional[str]
-    user_id: str
     async_client: httpx.AsyncClient
     user_email: Optional[str]
     project: AsyncProject
@@ -978,13 +965,9 @@ class AsyncMemoryClient:
         self.host = host or "https://api.mem0.ai"
         self.org_id = org_id
         self.project_id = project_id
-        self.user_id = get_user_id()
 
         if not self.api_key:
             raise ValueError("Mem0 API Key not provided. Please provide an API Key.")
-
-        # Create MD5 hash of API key for user_id
-        self.user_id = hashlib.md5(self.api_key.encode()).hexdigest()
 
         if client is not None:
             self.async_client = client
@@ -993,7 +976,6 @@ class AsyncMemoryClient:
             self.async_client.headers.update(
                 {
                     "Authorization": f"Token {self.api_key}",
-                    "Mem0-User-ID": self.user_id,
                 }
             )
         else:
@@ -1001,7 +983,6 @@ class AsyncMemoryClient:
                 base_url=self.host,
                 headers={
                     "Authorization": f"Token {self.api_key}",
-                    "Mem0-User-ID": self.user_id,
                 },
                 timeout=300,
             )
@@ -1026,7 +1007,6 @@ class AsyncMemoryClient:
                 f"{self.host}/v1/ping/",
                 headers={
                     "Authorization": f"Token {self.api_key}",
-                    "Mem0-User-ID": self.user_id,
                 },
                 params=params,
             )
